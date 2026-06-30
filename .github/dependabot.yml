@@ -1,0 +1,32 @@
+version: 2
+
+updates:
+  # npm — weekly, Mondays.
+  # Dev dependencies grouped into a single PR to reduce noise.
+  # Production dependencies arrive individually so each goes through CI separately.
+  - package-ecosystem: npm
+    directory: /functions
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:00"
+      timezone: America/Sao_Paulo
+    open-pull-requests-limit: 5
+    groups:
+      dev-dependencies:
+        dependency-type: development
+        update-types:
+          - minor
+          - patch
+      # Production dependencies are intentionally NOT grouped.
+      # Each arrives as its own PR so CI validates them independently.
+
+  # GitHub Actions — keeps SHA-pinned actions up to date automatically.
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:00"
+      timezone: America/Sao_Paulo
+    open-pull-requests-limit: 5

@@ -1,0 +1,165 @@
+name: Quality Gate
+
+on:
+  workflow_call:
+    inputs:
+      skip_sonar:
+        description: "Skip the SonarCloud analysis job (used for pre-PR feature-branch runs)"
+        required: false
+        type: boolean
+        default: false
+
+    secrets:
+      SONAR_TOKEN:
+        required: true
+
+concurrency:
+  group: quality-gate-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pull-requests: write # SonarCloud PR decoration
+
+jobs:
+  lint:
+    name: Lint & Type-check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4.1.0
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: functions/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+        working-directory: functions
+
+      - name: Lint
+        run: npm run lint
+        working-directory: functions
+
+      - name: Type-check
+        run: npm run typecheck
+        working-directory: functions
+
+  test:
+    name: Test & Coverage
+    runs-on: ubuntu-latest
+    needs: lint
+    steps:
+      - name: Checkout
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4.1.0
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: functions/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+        working-directory: functions
+
+      - name: Clean previous coverage
+        run: rm -rf functions/coverage
+
+      - name: Run tests with coverage
+        run: npm run test:coverage
+        working-directory: functions
+
+      - name: Verify generated coverage report
+        run: |
+          test -f functions/coverage/lcov.info
+          echo "Generated coverage report:"
+          ls -la functions/coverage/lcov.info
+          echo ""
+          echo "Source files in LCOV:"
+          grep '^SF:' functions/coverage/lcov.info
+          echo ""
+          echo "Coverage counters:"
+          grep '^LF:\|^LH:' functions/coverage/lcov.info
+
+      - name: Upload coverage report
+        uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
+        with:
+          name: coverage-report
+          path: functions/coverage/lcov.info
+          retention-days: 1
+
+  sonar:
+    name: SonarCloud Analysis
+    runs-on: ubuntu-latest
+    needs: test
+    if: ${{ !inputs.skip_sonar }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          fetch-depth: 0
+
+      - name: Download coverage report
+        uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53 # v6.0.0
+        with:
+          name: coverage-report
+          path: functions/coverage/
+
+      - name: Confirm coverage file exists
+        run: ls -la functions/coverage/
+
+      - name: Debug LCOV paths
+        run: |
+          echo "LCOV exists:"
+          ls -la functions/coverage/lcov.info
+          echo ""
+          echo "First SF entries:"
+          grep '^SF:' functions/coverage/lcov.info | head -30
+          echo ""
+          echo "Project files:"
+          find functions/src -type f | sort | head -80
+
+      - name: Clean Sonar workspace
+        run: rm -rf .scannerwork
+
+      - name: Resolve package version
+        id: pkg
+        run: echo "version=$(node -p "require('./functions/package.json').version")" >> $GITHUB_OUTPUT
+
+      - name: SonarCloud Scan
+        uses: SonarSource/sonarqube-scan-action@713881670b6b3676cda39549040e2d88c70d582e # v4.2.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        with:
+          args: >
+            -Dsonar.projectVersion=${{ steps.pkg.outputs.version }}
+            -Dsonar.javascript.lcov.reportPaths=functions/coverage/lcov.info
+
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - name: Checkout
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4.1.0
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: functions/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+        working-directory: functions
+
+      - name: Build
+        run: npm run build
+        working-directory: functions

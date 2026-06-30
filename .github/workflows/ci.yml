@@ -1,0 +1,45 @@
+name: CI
+
+run-name: >-
+  ${{ github.event_name == 'pull_request'
+   && format('CI — Validate PR #{0}: {1} — {2}', github.event.pull_request.number, github.head_ref, github.actor)
+    || format('CI — Merged to main: PR #{0} — {1}', github.event.head_commit.message, github.actor) }}
+
+on:
+  pull_request:
+    branches:
+      - main
+    types:
+      - opened
+      - synchronize
+      - reopened
+
+  push:
+    branches:
+      - main
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  dependency-review:
+    name: Dependency Review
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+
+      - name: Dependency Review
+        uses: actions/dependency-review-action@3b139cfc5fae8b618d3eae3675e383bb1769c019 # v4.5.0
+
+  quality-gate:
+    name: Quality Gate
+    uses: ./.github/workflows/quality-gate.yml
+    secrets:
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}

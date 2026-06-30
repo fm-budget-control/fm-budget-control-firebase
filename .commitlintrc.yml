@@ -1,0 +1,28 @@
+extends:
+  - "@commitlint/config-conventional"
+
+rules:
+  type-enum:
+    - 2
+    - always
+    - - feat      # New feature -> minor version bump
+      - fix       # Bug fix -> patch version bump
+      - refactor  # Restructuring, no API change, no bump
+      - perf      # Performance improvement, no bump
+      - test      # Adding or updating tests, no bump
+      - docs      # Documentation only, no bump
+      - chore     # Dependencies, tooling, configuration, no bump
+      - ci        # CI/CD pipeline changes, no bump
+      - revert    # Reverts a previous commit
+  subject-full-stop:
+    - 2
+    - never
+    - "."
+  subject-case:
+    - 2
+    - always
+    - lower-case
+  header-max-length:
+    - 2
+    - always
+    - 100

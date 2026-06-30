@@ -1,0 +1,63 @@
+name: Release
+
+run-name: "Release — ${{ github.actor }} — ${{ inputs.reason }}"
+
+on:
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: "Release reason (e.g. 'v1.1.0 — add budget domain')"
+        required: true
+        type: string
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false # Never cancel an in-progress release
+
+permissions:
+  contents: write      # Create tags and GitHub Releases
+  issues: write        # Allow semantic-release to comment on issues
+  pull-requests: write # Allow semantic-release to comment on PRs
+
+jobs:
+  release:
+    name: Semantic Release & Deploy
+    runs-on: ubuntu-latest
+    # The production environment requires manual approval from a designated
+    # reviewer before this job proceeds. Configure at:
+    # Settings → Environments → production → Required reviewers → add yourself
+    environment: production
+    steps:
+      - name: Checkout
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4.1.0
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: functions/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+        working-directory: functions
+
+      - name: Build
+        run: npm run build
+        working-directory: functions
+
+      - name: Release
+        # Runs from repo root so .releaserc.yml is found; uses functions/node_modules for plugins
+        run: npx --prefix ./functions semantic-release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Deploy to Firebase
+        # Runs from repo root so firebase.json is found; uses functions/node_modules for firebase-tools
+        # FIREBASE_TOKEN: generate via `firebase login:ci` and add to:
+        # GitHub → Settings → Secrets and variables → Actions → FIREBASE_TOKEN
+        run: npx --prefix ./functions firebase deploy --only functions --project production
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
