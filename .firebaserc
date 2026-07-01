@@ -1,6 +1,6 @@
 {
   "projects": {
-    "default": "fm-budget-control-dev",
+    "default": "fm-budget-control",
     "staging": "fm-budget-control-staging",
     "production": "fm-budget-control-prod"
   }

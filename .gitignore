@@ -150,3 +150,5 @@ functions/.env.local
 
 # Future hosting build
 hosting/dist/
+
+.agents/
