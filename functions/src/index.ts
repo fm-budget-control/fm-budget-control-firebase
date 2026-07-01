@@ -1,5 +1,11 @@
 import { onRequest } from "firebase-functions/v2/https";
+import express from "express";
 
-export const api = onRequest((request, response) => {
-  response.send("Hello from Firebase!");
+const app = express();
+app.use(express.json());
+
+app.get("/test", (_req, res) => {
+  res.send("Test from index");
 });
+
+export const api = onRequest(app);
