@@ -11,24 +11,6 @@
       ]
     }
   ],
-  "hosting": {
-    "public": "hosting/dist",
-    "ignore": [
-      "firebase.json",
-      "**/.*",
-      "**/node_modules/**"
-    ],
-    "rewrites": [
-      {
-        "source": "/api/**",
-        "function": "api"
-      },
-      {
-        "source": "**",
-        "destination": "/index.html"
-      }
-    ]
-  },
   "emulators": {
     "auth": {
       "port": 9099
@@ -38,9 +20,6 @@
     },
     "functions": {
       "port": 5001
-    },
-    "hosting": {
-      "port": 3000
     },
     "ui": {
       "enabled": true,
