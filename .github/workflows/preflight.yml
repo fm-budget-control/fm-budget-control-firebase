@@ -5,7 +5,7 @@ run-name: "Pre-flight — ${{ github.ref_name }} — ${{ github.actor }}"
 on:
   push:
     branches:
-      - "feature/**"
+      - "feat/**"
       - "fix/**"
       - "chore/**"
       - "docs/**"
