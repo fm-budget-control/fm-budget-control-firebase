@@ -8,6 +8,9 @@ const config: Config = {
   transform: {
     "^.+\\.ts$": ["ts-jest", { tsconfig: { module: "CommonJS" } }],
   },
+  moduleNameMapper: {
+    "^(\\.{1,2}/.*)\\.js$": "$1",
+  },
   coverageDirectory: "coverage",
   coverageReporters: ["lcov", "text"],
   collectCoverageFrom: ["src/**/*.ts", "!src/**/*.spec.ts"],
