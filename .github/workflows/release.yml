@@ -15,13 +15,15 @@ concurrency:
   cancel-in-progress: false # Never cancel an in-progress release
 
 permissions:
-  contents: write      # Create tags and GitHub Releases
-  issues: write        # Allow semantic-release to comment on issues
-  pull-requests: write # Allow semantic-release to comment on PRs
+  contents: read
 
 jobs:
   release:
     name: Semantic Release & Deploy
+    permissions:
+      contents: write      # Create tags and GitHub Releases
+      issues: write        # Allow semantic-release to comment on issues
+      pull-requests: write # Allow semantic-release to comment on PRs
     runs-on: ubuntu-latest
     # The production environment requires manual approval from a designated
     # reviewer before this job proceeds. Configure at:
