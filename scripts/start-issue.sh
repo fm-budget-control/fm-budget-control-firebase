@@ -200,8 +200,19 @@ main() {
  
   # ── Step 9: install dependencies ──────────────────────────────────────────
   step "Installing dependencies"
-  npm ci
-  success "Dependencies installed"
+  local installed=0
+  for dir in */; do
+    if [[ -f "${dir}package-lock.json" ]]; then
+      info "Installing ${dir%/} dependencies"
+      npm ci --prefix "$dir"
+      (( installed++ )) || true
+    fi
+  done
+  if [[ $installed -eq 0 ]]; then
+    warn "No package-lock.json found in any service directory — skipping install"
+  else
+    success "Dependencies installed (${installed} service(s))"
+  fi
  
   # ── Summary ───────────────────────────────────────────────────────────────
   echo ""
