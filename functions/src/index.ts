@@ -1,4 +1,7 @@
-import { onRequest } from "firebase-functions/v2/https";
-import { app } from "./app.js";
+import { onCall } from "firebase-functions/v2/https";
 
-export const api = onRequest(app);
+export function testHandler() {
+  return { message: "Test from index 2" };
+}
+
+export const test = onCall(testHandler);
