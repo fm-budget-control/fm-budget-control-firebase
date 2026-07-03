@@ -1,0 +1,46 @@
+name: CodeQL
+
+run-name: >-
+  ${{ github.event_name == 'pull_request'
+   && format('CodeQL — PR #{0}: {1} — {2}', github.event.pull_request.number, github.head_ref, github.actor)
+    || format('CodeQL — {0}: {1}', github.ref_name, github.actor) }}
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+  schedule:
+    - cron: '0 6 * * 1' # Mondays 06:00 UTC — ensures main always has a baseline scan
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  security-events: write
+  actions: read
+
+jobs:
+  analyze:
+    name: Analyze (javascript-typescript)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4 # dependabot will pin to SHA
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3 # dependabot will pin to SHA
+        with:
+          languages: javascript-typescript
+
+      - name: Autobuild
+        uses: github/codeql-action/autobuild@v3 # dependabot will pin to SHA
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3 # dependabot will pin to SHA
+        with:
+          category: "/language:javascript-typescript"
