@@ -6,6 +6,6 @@ describe("GET /test", () => {
     const response = await request(app).get("/test");
 
     expect(response.status).toBe(200);
-    expect(response.text).toBe("Test from index");
+    expect(response.text).toBe("Test from index 2");
   });
 });

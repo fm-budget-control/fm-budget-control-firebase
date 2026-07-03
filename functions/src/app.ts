@@ -5,7 +5,7 @@ app.disable("x-powered-by");
 app.use(express.json());
 
 app.get("/test", (_req, res) => {
-  res.send("Test from index");
+  res.send("Test from index 2");
 });
 
 export { app };

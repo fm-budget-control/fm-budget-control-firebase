@@ -24,6 +24,7 @@ jobs:
       contents: write      # Create tags and GitHub Releases
       issues: write        # Allow semantic-release to comment on issues
       pull-requests: write # Allow semantic-release to comment on PRs
+      id-token: write      # Required for Workload Identity Federation
     runs-on: ubuntu-latest
     # The production environment requires manual approval from a designated
     # reviewer before this job proceeds. Configure at:
@@ -59,7 +60,8 @@ jobs:
       - name: Authenticate to Google Cloud
         uses: google-github-actions/auth@7c6bc770dae815cd3e89ee6cdf493a5fab2cc093 # v3.0.0
         with:
-          credentials_json: ${{ secrets.GCP_SA_KEY }}
+          workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
+          service_account: ${{ secrets.WIF_SERVICE_ACCOUNT }}
 
       - name: Deploy to Firebase
         run: npx --prefix ./functions firebase deploy --only functions --project production --force
