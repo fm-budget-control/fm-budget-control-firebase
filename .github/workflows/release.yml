@@ -62,4 +62,4 @@ jobs:
           credentials_json: ${{ secrets.GCP_SA_KEY }}
 
       - name: Deploy to Firebase
-        run: npx --prefix ./functions firebase deploy --only functions --project production
+        run: npx --prefix ./functions firebase deploy --only functions --project production --force
