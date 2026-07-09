@@ -111,6 +111,12 @@ jobs:
         run: npm ci
         working-directory: functions
 
+      - name: Set up Java (required by the Firestore emulator)
+        uses: actions/setup-java@v4 # dependabot will pin to SHA
+        with:
+          distribution: temurin
+          java-version: 21
+
       - name: Cache Firebase emulator binaries
         uses: actions/cache@v4 # dependabot will pin to SHA
         with:

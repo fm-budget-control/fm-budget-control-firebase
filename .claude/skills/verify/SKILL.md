@@ -49,3 +49,5 @@ curl -s "http://127.0.0.1:9099/identitytoolkit.googleapis.com/v1/accounts:signIn
   NOT prove the emulator can load the codebase — always check the load line.
 - `UID` is readonly in zsh; don't use it as a shell variable name.
 - Core `Password` VO enforces 5–16 chars — pick test passwords accordingly.
+- firebase-tools v15 requires **Java 21+** for the Firestore emulator; on CI
+  runners the default JDK may be older — set up Temurin 21 explicitly.
