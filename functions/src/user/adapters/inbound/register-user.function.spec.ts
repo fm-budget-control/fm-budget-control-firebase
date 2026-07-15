@@ -51,6 +51,27 @@ describe("registerUserHandler", () => {
     });
   });
 
+  it("coerces non-string fields to empty strings so the use case rejects them", async () => {
+    const execute = jest.fn().mockResolvedValue("user-id");
+    const handler = registerUserHandler(useCaseWith(execute));
+
+    await handler(
+      requestWith({
+        fullName: { first: "John", last: "Doe" },
+        email: 123,
+        password: true,
+        birthDate: ["1990-01-01"],
+      }),
+    );
+
+    expect(execute).toHaveBeenCalledWith({
+      fullName: "",
+      email: "",
+      password: "",
+      birthDate: "",
+    });
+  });
+
   it("maps EmailAlreadyRegisteredError to an already-exists HttpsError", async () => {
     const execute = jest.fn().mockRejectedValue(new EmailAlreadyRegisteredError());
     const handler = registerUserHandler(useCaseWith(execute));
