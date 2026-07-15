@@ -152,3 +152,5 @@ functions/.env.local
 hosting/dist/
 
 .agents/
+# Local emulator secrets
+.secret.local
