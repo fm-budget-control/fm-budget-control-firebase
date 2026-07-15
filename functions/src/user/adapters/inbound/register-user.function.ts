@@ -50,11 +50,16 @@ function toCommand(data: unknown): RegisterUserCommand {
   const form = (data ?? {}) as Record<string, unknown>;
 
   return {
-    fullName: String(form.fullName ?? ""),
-    email: String(form.email ?? ""),
-    password: String(form.password ?? ""),
-    birthDate: String(form.birthDate ?? ""),
+    fullName: asString(form.fullName),
+    email: asString(form.email),
+    password: asString(form.password),
+    birthDate: asString(form.birthDate),
   };
+}
+
+// Non-string values become "" so the use case rejects them as invalid input.
+function asString(value: unknown): string {
+  return typeof value === "string" ? value : "";
 }
 
 function toHttpsError(error: unknown): HttpsError {
