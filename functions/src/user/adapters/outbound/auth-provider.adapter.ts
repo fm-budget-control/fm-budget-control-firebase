@@ -30,8 +30,26 @@ export class AuthProviderAdapter implements AuthProviderPort {
       await getAuth().setCustomUserClaims(params.id, { role: DEFAULT_ROLE });
       return "created";
     } catch (error: unknown) {
-      if (isAlreadyExistsError(error)) return "email-already-exists";
+      if (isAlreadyExistsError(error)) {
+        // A previous attempt may have created the account but died before
+        // assigning the role claim — heal it so the resumed registration
+        // does not produce a user that every guarded endpoint rejects.
+        await this.ensureRoleClaim(params.id);
+        return "email-already-exists";
+      }
       throw error;
+    }
+  }
+
+  // Only fills in a missing role; never overwrites an existing one, so a
+  // re-registration attempt cannot demote an elevated account.
+  private async ensureRoleClaim(uid: string): Promise<void> {
+    const existing = await getAuth().getUser(uid);
+    if (existing.customClaims?.role === undefined) {
+      await getAuth().setCustomUserClaims(uid, {
+        ...existing.customClaims,
+        role: DEFAULT_ROLE,
+      });
     }
   }
 }
