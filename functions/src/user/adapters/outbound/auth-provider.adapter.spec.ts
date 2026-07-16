@@ -25,7 +25,11 @@ describe("AuthProviderAdapter", () => {
   describe("createAccount", () => {
     it("creates a Firebase Auth account with id, email, password and display name", async () => {
       const mockCreateUser = jest.fn().mockResolvedValue(undefined);
-      mockGetAuth.mockReturnValue({ createUser: mockCreateUser });
+      const mockSetCustomUserClaims = jest.fn().mockResolvedValue(undefined);
+      mockGetAuth.mockReturnValue({
+        createUser: mockCreateUser,
+        setCustomUserClaims: mockSetCustomUserClaims,
+      });
 
       const result = await adapter.createAccount(params);
 
@@ -36,6 +40,30 @@ describe("AuthProviderAdapter", () => {
         password: "password123",
         displayName: "John Doe",
       });
+    });
+
+    it("assigns the default user role as a custom claim on the new account", async () => {
+      const mockSetCustomUserClaims = jest.fn().mockResolvedValue(undefined);
+      mockGetAuth.mockReturnValue({
+        createUser: jest.fn().mockResolvedValue(undefined),
+        setCustomUserClaims: mockSetCustomUserClaims,
+      });
+
+      await adapter.createAccount(params);
+
+      expect(mockSetCustomUserClaims).toHaveBeenCalledWith("user-id", { role: "user" });
+    });
+
+    it("does not assign a role when the account already exists", async () => {
+      const mockSetCustomUserClaims = jest.fn();
+      mockGetAuth.mockReturnValue({
+        createUser: jest.fn().mockRejectedValue({ code: "auth/email-already-exists" }),
+        setCustomUserClaims: mockSetCustomUserClaims,
+      });
+
+      await adapter.createAccount(params);
+
+      expect(mockSetCustomUserClaims).not.toHaveBeenCalled();
     });
 
     it("returns email-already-exists when the email is already registered", async () => {

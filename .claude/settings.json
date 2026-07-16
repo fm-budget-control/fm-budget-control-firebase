@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(kill 21385)",
+      "Bash(lsof -nP -iTCP:5001 -iTCP:9099 -iTCP:8080 -iTCP:4000 -sTCP:LISTEN)",
+      "Bash(ps -p 21310 -o pid,command)",
+      "Bash(time curl -s http://127.0.0.1:5001/demo-fm-budget-control/us-central1/registerUser -H \"Content-Type: application/json\" -d '{\"data\":{\"fullName\":\"Scenario A\",\"email\":\"scenario-a@example.com\",\"password\":\"pass12!\",\"birthDate\":\"1990-01-01\"}}')",
+      "Bash(curl -s -H \"Authorization: Bearer owner\" http://127.0.0.1:9099/identitytoolkit.googleapis.com/v1/projects/demo-fm-budget-control/accounts:query -H \"Content-Type: application/json\" -d '{}')"
+    ]
+  }
+}

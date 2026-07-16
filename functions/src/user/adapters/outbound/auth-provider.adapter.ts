@@ -3,6 +3,7 @@ import type {
   CreateAccountResult,
 } from "@fm-budget-control/fm-budget-control-core/user/ports";
 import { getAuth } from "../../../kernel/firebase-admin.js";
+import { DEFAULT_ROLE } from "../../../kernel/roles.js";
 
 // The uid is derived deterministically from the email, so a duplicate uid
 // and a duplicate email both mean the same thing: a previous attempt
@@ -26,6 +27,7 @@ export class AuthProviderAdapter implements AuthProviderPort {
         password: params.password,
         displayName: params.displayName,
       });
+      await getAuth().setCustomUserClaims(params.id, { role: DEFAULT_ROLE });
       return "created";
     } catch (error: unknown) {
       if (isAlreadyExistsError(error)) return "email-already-exists";
