@@ -28,7 +28,7 @@ describe("UserRepositoryAdapter", () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    adapter = new UserRepositoryAdapter();
+    adapter = new UserRepositoryAdapter(1);
   });
 
   describe("createProfile", () => {
@@ -41,7 +41,16 @@ describe("UserRepositoryAdapter", () => {
       expect(result).toBe("created");
       expect(mockCollectionFn).toHaveBeenCalledWith("users");
       expect(mockDocFn).toHaveBeenCalledWith("user-id");
-      expect(mockCreate).toHaveBeenCalledWith(record);
+      expect(mockCreate).toHaveBeenCalledWith({ ...record, idDerivation: { version: 1 } });
+    });
+
+    it("stamps the document with the id secret version it was constructed with", async () => {
+      const mockCreate = jest.fn().mockResolvedValue(undefined);
+      mockFirestoreCreate(mockCreate);
+
+      await new UserRepositoryAdapter(2).createProfile(record);
+
+      expect(mockCreate).toHaveBeenCalledWith({ ...record, idDerivation: { version: 2 } });
     });
 
     it("returns already-exists when the document already exists", async () => {
