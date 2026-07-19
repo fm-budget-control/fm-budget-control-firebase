@@ -17,8 +17,10 @@ import { UserRepositoryAdapter } from "../outbound/user-repository.adapter.js";
 
 const userIdHmacSecret = defineSecret("USER_ID_HMAC_SECRET");
 
-// Changing the version invalidates every derived user id; bump only as part
-// of a deliberate secret-rotation migration.
+// Counts how many times USER_ID_HMAC_SECRET has been rotated. Metadata only —
+// it does not participate in id derivation; it is stamped on each profile doc
+// to record which secret generation minted the id. Bump it together with
+// every secret rotation.
 const USER_ID_HMAC_SECRET_VERSION = 1;
 
 export type RegisterUserResponse = {
@@ -38,9 +40,9 @@ export function registerUserHandler(useCase: RegisterUserUseCase) {
 
 export const registerUser = onCall({ secrets: [userIdHmacSecret] }, (request) => {
   const useCase = new RegisterUserUseCase(
-    new UserRepositoryAdapter(),
+    new UserRepositoryAdapter(USER_ID_HMAC_SECRET_VERSION),
     new AuthProviderAdapter(),
-    new HmacIdAdapter(userIdHmacSecret.value(), USER_ID_HMAC_SECRET_VERSION),
+    new HmacIdAdapter(userIdHmacSecret.value()),
   );
 
   return registerUserHandler(useCase)(request);

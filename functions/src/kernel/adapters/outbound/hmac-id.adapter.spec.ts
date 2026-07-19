@@ -4,7 +4,7 @@ const UUID_PATTERN =
   /^[0-9a-f]{8}-[0-9a-f]{4}-5[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
 
 describe("HmacIdAdapter", () => {
-  const adapter = new HmacIdAdapter("test-secret", 1);
+  const adapter = new HmacIdAdapter("test-secret");
 
   it("returns a valid UUID v5-formatted string", async () => {
     const id = await adapter.derive("user@example.com");
@@ -35,11 +35,11 @@ describe("HmacIdAdapter", () => {
     expect(trimmed).toBe(padded);
   });
 
-  it("returns different IDs for the same input across secret versions", async () => {
-    const v1 = new HmacIdAdapter("test-secret", 1);
-    const v2 = new HmacIdAdapter("test-secret", 2);
-    const idV1 = await v1.derive("user@example.com");
-    const idV2 = await v2.derive("user@example.com");
-    expect(idV1).not.toBe(idV2);
+  it("returns different IDs for the same input across secrets", async () => {
+    const oldSecret = new HmacIdAdapter("test-secret");
+    const newSecret = new HmacIdAdapter("rotated-secret");
+    const idOld = await oldSecret.derive("user@example.com");
+    const idNew = await newSecret.derive("user@example.com");
+    expect(idOld).not.toBe(idNew);
   });
 });

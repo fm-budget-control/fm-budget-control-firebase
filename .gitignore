@@ -151,6 +151,9 @@ functions/.env.local
 # Future hosting build
 hosting/dist/
 
+# Firebase Emulator Data
+functions/emulator-data
+
 .agents/
 # Local emulator secrets
 .secret.local
