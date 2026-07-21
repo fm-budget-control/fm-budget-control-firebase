@@ -25,13 +25,21 @@ async function registerUser(data) {
   return res.json();
 }
 
+// Firestore now enforces default-deny security rules; reads/writes issued
+// directly against the emulator (as opposed to via the Admin SDK, which
+// bypasses rules) need the same admin-bypass header the Auth calls below use.
 async function getProfile(id) {
-  const res = await fetch(`${FIRESTORE_DOCS}/users/${id}`);
+  const res = await fetch(`${FIRESTORE_DOCS}/users/${id}`, {
+    headers: { Authorization: "Bearer owner" },
+  });
   return res.ok ? res.json() : null;
 }
 
 async function deleteProfile(id) {
-  const res = await fetch(`${FIRESTORE_DOCS}/users/${id}`, { method: "DELETE" });
+  const res = await fetch(`${FIRESTORE_DOCS}/users/${id}`, {
+    method: "DELETE",
+    headers: { Authorization: "Bearer owner" },
+  });
   assert.ok(res.ok, `failed to delete profile doc: ${res.status}`);
 }
 
