@@ -64,4 +64,4 @@ jobs:
           service_account: ${{ secrets.WIF_SERVICE_ACCOUNT }}
 
       - name: Deploy to Firebase
-        run: npx --prefix ./functions firebase deploy --only functions --project production --force
+        run: npx --prefix ./functions firebase deploy --only functions,firestore:rules --project production --force
