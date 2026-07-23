@@ -6,7 +6,7 @@
     "serve:firestore": "npm run build && firebase emulators:start --project demo-fm-budget-control --only auth,firestore,functions --import ./emulator-data --export-on-exit ./emulator-data",
     "serve:auth": "npm run build && firebase emulators:start --project demo-fm-budget-control --only auth,functions --import ./emulator-data --export-on-exit ./emulator-data",
     "serve:functions": "npm run build && firebase emulators:start --project demo-fm-budget-control --only functions --import ./emulator-data --export-on-exit ./emulator-data",
-    "deploy": "firebase deploy --only functions",
+    "deploy": "firebase deploy --only functions,firestore:rules",
     "logs": "firebase functions:log",
     "lint": "eslint src",
     "typecheck": "tsc --noEmit",
