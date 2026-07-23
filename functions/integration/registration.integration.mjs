@@ -85,6 +85,24 @@ assert.ok(profile.fields.createdAt.stringValue, "missing createdAt");
 assert.ok(profile.fields.updatedAt.stringValue, "missing updatedAt");
 assert.ok(await signInSucceeds(form.email, form.password), "sign-in with registered password failed");
 
+step("security: default-deny Firestore rules reject direct client access");
+const unauthenticatedRead = await fetch(`${FIRESTORE_DOCS}/users/${userId}`);
+assert.equal(
+  unauthenticatedRead.status,
+  403,
+  `expected an unauthenticated read of an existing profile to be denied, got: ${unauthenticatedRead.status}`,
+);
+const unauthenticatedWrite = await fetch(`${FIRESTORE_DOCS}/users/security-rules-probe`, {
+  method: "PATCH",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({ fields: { probe: { booleanValue: true } } }),
+});
+assert.equal(
+  unauthenticatedWrite.status,
+  403,
+  `expected an unauthenticated write to be denied, got: ${unauthenticatedWrite.status}`,
+);
+
 step("duplicate registration: rejected with ALREADY_EXISTS");
 const duplicate = await registerUser(form);
 assert.equal(duplicate.error?.status, "ALREADY_EXISTS", JSON.stringify(duplicate));
